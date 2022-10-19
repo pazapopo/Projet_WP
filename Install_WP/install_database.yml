@@ -1,0 +1,46 @@
+---
+- name: "Install database"
+  hosts: prod
+  tags: database
+  tasks:
+    - name: "[database] - update server"
+      yum:
+        name: '*'
+        state: latest
+      become: yes
+
+    - name: "[database] - install mariadb server"
+      yum:
+        name: "{{ item }}"
+        state: present
+      become: yes
+      with_items:
+        - mariadb-server
+        - python3
+        - python36-mysql
+        - python36-PyMySQL
+#        - python36-dev        
+#        - mariadb-client
+
+    - name: "[database] - start mariadb server "
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      become: yes
+      with_items:
+        - mariadb
+
+
+    - name: "[database] - Create DB"
+      mysql_db:
+        name: "{{ mysql_db }}"
+      become: yes
+
+    - name: "[database] - Create user"
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        priv: "*.*:ALL"
+      become: yes
+
